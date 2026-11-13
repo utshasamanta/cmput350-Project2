@@ -1,6 +1,8 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
+#include <string>
 #include <tuple>
 
 // An entity can have any component it is templated with,
@@ -14,9 +16,10 @@ using EntityID = size_t;
 class Entity {
 public:
     EntityID GetID() const { return mID; }
+    const std::string& GetType() const { return mType; }
 
 private:
-    Entity() = default;
+    Entity() : mID(0), mType("") {}
     Entity(EntityID eid, const std::string& name) : mID(eid), mType(name) {}
     EntityID mID;
     std::string mType;

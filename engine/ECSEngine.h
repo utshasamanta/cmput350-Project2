@@ -71,10 +71,34 @@ template <typename... Components>
 ECSEngine<Components...>::~ECSEngine() {}
 
 template <typename... Components>
-void ECSEngine<Components...>::Run() {}
+void ECSEngine<Components...>::Run() {
+    auto window = mWindowManager.GetWindow();
+
+    while (window->isOpen()) {
+        if (!ProcessEvents()) {
+            break;
+        }
+
+        window->clear(sf::Color::Black);
+
+        if (!mSystemManager.Run(this)) {
+            break;
+        }
+
+        window->display();
+    }
+}
 
 template <typename... Components>
 bool ECSEngine<Components...>::ProcessEvents() {
+    auto window = mWindowManager.GetWindow();
+
+    while (const auto event = window->pollEvent()) {
+        if (event->is<sf::Event::Closed>()) {
+            window->close();
+            return false;
+        }
+    }
     return true;
 }
 
