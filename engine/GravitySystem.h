@@ -53,7 +53,17 @@ public:
 			}
 
 			movement.velocity.x += gravity.acceleration.x;
-			movement.velocity.y += gravity.acceleration.y;
+
+			// Falling is faster than rising, but the speed is capped.
+			if (movement.velocity.y < 0.0f) {
+				movement.velocity.y += gravity.acceleration.y;
+			} else {
+				movement.velocity.y += gravity.acceleration.y * 1.5f;
+			}
+
+			if (movement.velocity.y > 35.0f) {
+				movement.velocity.y = 35.0f;
+			}
 		}
 
 		return kContinue;
@@ -63,5 +73,4 @@ public:
 
 
 }
-
 

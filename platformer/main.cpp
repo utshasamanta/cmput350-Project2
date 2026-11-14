@@ -211,7 +211,7 @@ int main(int argc, char* argv[]) {
 
     const auto playerSprite = engine.GetSpriteManager().RegisterTexture(
         gResourcePath + "spritesheet-characters-default.png",
-        {{0.0f, 0.0f}, 128.0f, 128.0f}
+        {{0.0f, 640.0f}, 128.0f, 128.0f}
     );
 
     auto player = entityManager.CreateEntity("player");
@@ -223,8 +223,15 @@ int main(int argc, char* argv[]) {
     ECSEngine::CollisionComponent playerCollision{};
     playerCollision.staticEntity = false;
     playerCollision.doesDamage = false;
-    playerCollision.collisionBox = {{25.0f, 15.0f}, 78.0f, 110.0f};
-    playerCollision.previousCollisionBox = {{725.0f, 415.0f}, 78.0f, 110.0f};
+    playerCollision.collisionBox = {{40.0f, 25.0f}, 48.0f, 95.0f};
+    playerCollision.previousCollisionBox = {
+        {
+            700.0f + playerCollision.collisionBox.topLeft.x, 
+            400.0f + playerCollision.collisionBox.topLeft.y
+        }, 
+        playerCollision.collisionBox.width, 
+        playerCollision.collisionBox.height
+    };
 
     entityManager.AddComponent(player, playerCollision);
     entityManager.AddComponent(player, ECSEngine::InputComponent{player});

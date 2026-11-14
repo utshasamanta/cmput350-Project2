@@ -97,18 +97,27 @@ public:
             movement.velocity.x = std::clamp(movement.velocity.x, -kMaxRunVelocity, kMaxRunVelocity);
 
             // New Z press.
+            bool jumped = false;
+
             if (jump && !previousJump) {
                 if (collision.onGround) {
                     movement.velocity.y = -kJumpVelocity;
+                    jumped = true;
                 } else if (collision.onLeftWall) {
                     movement.velocity.x = kWallJumpVelocity;
 
                     movement.velocity.y = -kJumpVelocity;
+                    jumped = true;
                 } else if (collision.onRightWall) {
                     movement.velocity.x = -kWallJumpVelocity;
 
                     movement.velocity.y = -kJumpVelocity;
+                    jumped = true;
                 }
+            }
+
+            if (jumped) {
+                engine->GetSoundManager().GetSound("jump").play();
             }
 
             // Z was released while moving upward.
