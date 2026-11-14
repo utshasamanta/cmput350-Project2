@@ -39,11 +39,6 @@ public:
                 collision.collisionBox.width,
                 collision.collisionBox.height
             };
-
-            collision.onGround = false;
-            collision.onCeiling = false;
-            collision.onLeftWall = false;
-            collision.onRightWall = false;
             
         }
         return kContinue;

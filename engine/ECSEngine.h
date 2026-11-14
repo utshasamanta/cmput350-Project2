@@ -93,10 +93,48 @@ template <typename... Components>
 bool ECSEngine<Components...>::ProcessEvents() {
     auto window = mWindowManager.GetWindow();
 
+    // Before processing new events, preserve the keyboard state from the previous frame.
+    for (const Entity& entity : mEntityManager) {
+        const EntityID eid = entity.GetID();
+
+        if (!mEntityManager.IsValid(eid) || !mEntityManager.template HasComponent<InputComponent>(eid)) {
+            continue;
+        }
+
+        auto& input = mEntityManager.template GetComponent<InputComponent>(eid);
+        input.lastKeydown = input.keydown;
+    }
+
+    // helper used by both KeyPressed and KeyReleased
+    const auto setKeyState = [this](sf::Keyboard::Scancode scancode, bool isPressed) {
+        const size_t keyIndex = static_cast<size_t>(scancode);
+
+        for (const Entity& entity : mEntityManager) {
+            const EntityID eid = entity.GetID();
+
+            if (!mEntityManager.IsValid(eid) || !mEntityManager.template HasComponent<InputComponent>(eid)) {
+                continue;
+            }
+
+            auto& input = mEntityManager.template GetComponent<InputComponent>(eid);
+
+            if (keyIndex < input.keydown.size()) {
+                input.keydown.set(keyIndex, isPressed);
+            }
+        }
+    };
+
+
     while (const auto event = window->pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
             window->close();
             return false;
+        }
+
+        if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+            setKeyState(keyPressed->scancode, true);
+        } else if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>()) {
+            setKeyState(keyReleased->scancode, false);
         }
     }
     return true;

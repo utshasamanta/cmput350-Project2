@@ -39,6 +39,11 @@ public:
                 continue;
             }
 
+            dynamicCollision.onGround = false;
+            dynamicCollision.onCeiling = false;
+            dynamicCollision.onLeftWall = false;
+            dynamicCollision.onRightWall = false;
+
             auto& dynamicLocation = entities.template GetComponent<LocationComponent>(dynamicID);
 
             for (const Entity& staticEntity : entities) {
@@ -74,15 +79,12 @@ public:
                 // Damage tiles are currently spikes.
                 if (staticCollision.doesDamage &&
                     entities.template HasComponent<RespawnComponent>(dynamicID)) {
-                    const auto& respawn =
-                        entities.template GetComponent<RespawnComponent>(dynamicID);
 
+                    const auto& respawn = entities.template GetComponent<RespawnComponent>(dynamicID);
                     dynamicLocation.loc = respawn.loc;
 
                     if (entities.template HasComponent<MovementComponent>(dynamicID)) {
-                        auto& movement =
-                            entities.template GetComponent<MovementComponent>(dynamicID);
-
+                        auto& movement = entities.template GetComponent<MovementComponent>(dynamicID);
                         movement.velocity = {0.0f, 0.0f};
                     }
 
@@ -91,8 +93,7 @@ public:
                     break;
                 }
 
-                ResolveStaticCollision(entities, dynamicID, dynamicLocation, dynamicCollision,
-                                       staticBox);
+                ResolveStaticCollision(entities, dynamicID, dynamicLocation, dynamicCollision, staticBox);
             }
         }
 
