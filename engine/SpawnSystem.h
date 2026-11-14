@@ -48,7 +48,7 @@ public:
                 continue;
             }
             auto& spawn = entities.template GetComponent<SpawnComponent>(id);
-            if (spawn.spawnType != "star" || spawn.totalSpawns <= 0 ||
+            if (spawn.spawnType != "star" || spawn.totalSpawns == 0 ||
                 !entities.template HasComponent<LocationComponent>(spawn.entityID)) {
                 continue;
             }
@@ -61,7 +61,9 @@ public:
             auto position = entities.template GetComponent<LocationComponent>(spawn.entityID).loc;
             position.y -= 64.0f;
             pending.push_back({position, spawn.spawnTextureID});
-            --spawn.totalSpawns;
+            if (spawn.totalSpawns > 0) {
+                --spawn.totalSpawns;
+            }
             spawn.timeToNextSpawn = spawn.timeBetweenSpawns;
         }
 

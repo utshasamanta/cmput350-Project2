@@ -40,7 +40,9 @@ Run the automated spawn and score checks with `./build/engine/ECSTest`.
 
 ## Person B features
 
-- Each map `S` creates a star spawner: one star every 120 frames, up to 20.
+- Each map `S` creates a star spawner: one star every 120 frames continuously.
+  A negative `totalSpawns` means continuous spawning; zero stops spawning, and
+  a positive value limits the remaining spawns.
 - Stars launch upward with a random horizontal velocity. Each has location,
   movement, gravity, collision, and sprite components, with entity type `star`.
 - One extra star starts outside the left wall for wall-jump testing.
