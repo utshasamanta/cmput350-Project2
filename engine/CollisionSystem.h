@@ -113,13 +113,13 @@ private:
     }
 
     static bool Overlaps(const Rect& first, const Rect& second) {
-        const bool separate = 
-            first.topLeft.x + first.width < second.topLeft.x ||
-            first.topLeft.x > second.topLeft.x + second.width ||
-            first.topLeft.y + first.height < second.topLeft.y ||
-            first.topLeft.y > second.topLeft.y + second.height;
-        
-            return !separate;
+        const bool separate =
+            first.topLeft.x + first.width <= second.topLeft.x ||
+            first.topLeft.x >= second.topLeft.x + second.width ||
+            first.topLeft.y + first.height <= second.topLeft.y ||
+            first.topLeft.y >= second.topLeft.y + second.height;
+
+        return !separate;
     }
 
     static void ResolveStaticCollision(

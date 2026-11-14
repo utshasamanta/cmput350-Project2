@@ -44,9 +44,11 @@ public:
 				isOnGround = collision.onGround;
 			}
 
-			// if the entity is on the ground, we don't apply gravity
+			// Keep a small downward velocity while grounded. This makes the
+			// collision system detect floor contact every frame instead of
+			// allowing onGround to alternate between true and false.
 			if (isOnGround && movement.velocity.y >= 0.0f) {
-				movement.velocity.y = 0.0f;
+				movement.velocity.y = gravity.acceleration.y;
 				continue;
 			}
 
@@ -61,6 +63,5 @@ public:
 
 
 }
-
 
 

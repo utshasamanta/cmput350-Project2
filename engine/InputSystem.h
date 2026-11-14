@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "Keyboard.h"
 
 namespace ECSEngine {
@@ -10,6 +12,7 @@ const float kJumpVelocity = 25;
 const float kGroundRunAcceleration = 2;
 const float kAirRunAcceleration = 1;
 const float kDashInterval = 60;
+const float kDashDuration = 6;
 const float kWallJumpVelocity = 12;
 const float kWallSlideVelocity = 4;
 
@@ -47,7 +50,6 @@ public:
             const bool left = input.keydown[Key::Left];
             const bool right = input.keydown[Key::Right];
             const bool down = input.keydown[Key::Down];
-            const bool up = input.keydown[Key::Up];
             const bool jump = input.keydown[Key::Z];
             const bool previousJump = input.lastKeydown[Key::Z];
             const bool dash = input.keydown[Key::C];
@@ -56,6 +58,15 @@ public:
             // Decrease dash cooldown every frame.
             if (input.lastDash > 0) {
                 --input.lastDash;
+            }
+
+            // Preserve dash speed for several frames instead of
+            // immediately clamping it back to normal running speed.
+            const bool currentlyDashing =
+                input.lastDash > kDashInterval - kDashDuration;
+
+            if (currentlyDashing) {
+                continue;
             }
 
             // Horizontal movement.
@@ -133,6 +144,7 @@ public:
                 }
 
                 movement.velocity.x = direction * kDashVelocity;
+                movement.velocity.y = 0.0f;
 
                 input.lastDash = kDashInterval;
             }
