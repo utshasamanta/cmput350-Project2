@@ -94,7 +94,7 @@ bool ECSEngine<Components...>::ProcessEvents() {
     auto window = mWindowManager.GetWindow();
 
     while (const auto event = window->pollEvent()) {
-        if (event->is<sf::Event::Closed>()) {
+        if (event->template is<sf::Event::Closed>()) {
             window->close();
             return false;
         }

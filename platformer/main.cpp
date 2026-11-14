@@ -24,7 +24,7 @@
 #include "SpriteManager.h"
 #include "SpriteSystem.h"
 
-std::string gResourcePath = "../assets/";
+std::string gResourcePath = "assets/";
 #define COMPONENTS                                                                             \
     ECSEngine::LocationComponent, ECSEngine::MovementComponent, ECSEngine::CollisionComponent, \
         ECSEngine::SpriteComponent, ECSEngine::SpawnComponent, ECSEngine::CameraComponent,     \
@@ -130,7 +130,7 @@ void LoadMap(Engine& engine, const std::string& path, const std::string& file) {
         std::getline(input, line);
 
         for (std::size_t column = 0; column < mapWidth; ++column) {
-            const char symbol = line[column];
+            const char symbol = column < line.size() ? line[column] : '.';
             const auto tileIterator = tiles.find(symbol);
 
             // '.' and other undefined symbols are empty.
@@ -166,7 +166,7 @@ void LoadMap(Engine& engine, const std::string& path, const std::string& file) {
                 entities.AddComponent(entity, collision);
             }
 
-            if (symbol == 'S') {
+            if (dictionaryType == 2 && symbol == 'S') {
                 ECSEngine::SpawnComponent spawner{};
 
                 spawner.entityID = entity;
@@ -189,10 +189,18 @@ int main(int argc, char* argv[]) {
     std::cout << "Usage: " << argv[0] << " [-path resource_path]\n";
     std::cout << "Using resource path: " << gResourcePath << "\n";
 
-    // Engine test code
-    Engine engine(1024, 768, "Test Engine");
+    if (!gResourcePath.empty() && gResourcePath.back() != '/') {
+        gResourcePath += '/';
+    }
+    Engine engine(1024, 768, "Platformer");
 
-    // Load sounds
+    engine.GetWindowManager().GetWindow()->setFramerateLimit(60);
+
+    auto& sounds = engine.GetSoundManager();
+    sounds.RegisterSound(gResourcePath + "sfx_jump.ogg", "jump");
+    sounds.RegisterSound(gResourcePath + "footstep_grass_003.ogg", "land");
+    sounds.RegisterSound(gResourcePath + "sfx_gem.ogg", "collect");
+    sounds.RegisterSound(gResourcePath + "footstep_snow_001.ogg", "wall");
 
     // Load maps
     LoadMap(engine, gResourcePath, "sky.map");
@@ -208,7 +216,7 @@ int main(int argc, char* argv[]) {
 
     auto player = entityManager.CreateEntity("player");
     entityManager.AddComponent(player, ECSEngine::LocationComponent{{700.0f, 400.f}});
-    entityManager.AddComponent(player, ECSEngine::MovementComponent{{1.0f, 0.0f}});
+    entityManager.AddComponent(player, ECSEngine::MovementComponent{{0.0f, 0.0f}});
     entityManager.AddComponent(player, ECSEngine::SpriteComponent{playerSprite, {{0.0f, 0.0f}, 128.0f, 128.0f}, true});
     entityManager.AddComponent(player, ECSEngine::GravityComponent{{0.0f, 1.0f}});
 
@@ -221,10 +229,36 @@ int main(int argc, char* argv[]) {
     entityManager.AddComponent(player, playerCollision);
     entityManager.AddComponent(player, ECSEngine::InputComponent{player});
     entityManager.AddComponent(player, ECSEngine::RespawnComponent{{700.0f, 400.0f}});
+    entityManager.AddComponent(player, ECSEngine::CameraFollower{player});
 
-    // Setup score component
+    // Place one collectible outside the left wall for wall-jump testing.
+    const auto starSprite = engine.GetSpriteManager().RegisterTexture(
+        gResourcePath + "spritesheet-tiles-default.png", {{640.0f, 320.0f}, 64.0f, 64.0f});
+    ECSEngine::CreateStar(entityManager, {512.0f, 256.0f}, {0.0f, 0.0f}, starSprite);
 
-    // Setup Camera
+    // The sheet stores 9 through 0 down column 13.
+    ECSEngine::ScoreComponent score{};
+    for (int digit = 0; digit < 10; ++digit) {
+        score.digitTextureID[digit] = engine.GetSpriteManager().RegisterTexture(
+            gResourcePath + "spritesheet-tiles-default.png",
+            {{832.0f, static_cast<float>((13 - digit) * 64)}, 64.0f, 64.0f});
+    }
+    for (int digit = 0; digit < 3; ++digit) {
+        const auto id = entityManager.CreateEntity("score-digit");
+        score.digitID[digit] = id;
+        entityManager.AddComponent(id, ECSEngine::LocationComponent{{16.0f + digit * 48.0f, 16.0f}});
+        entityManager.AddComponent(id, ECSEngine::SpriteComponent{
+            score.digitTextureID[0], {{0.0f, 0.0f}, 48.0f, 48.0f}, false});
+    }
+    const auto scoreEntity = entityManager.CreateEntity("score");
+    entityManager.AddComponent(scoreEntity, score);
+
+    const auto camera = entityManager.CreateEntity("camera");
+    entityManager.AddComponent(camera, ECSEngine::CameraComponent{
+        {764.0f, 384.0f}, 1.0f,
+        {{102.4f, 0.0f}, 819.2f, 768.0f},
+        {{307.2f, 0.0f}, 409.6f, 768.0f}, 0.08f});
+    entityManager.AddComponent(camera, ECSEngine::CameraShake{0, {0.0f, 0.0f}});
 
     // Add all systems
     auto& sm = engine.GetSystemManager();

@@ -51,6 +51,10 @@ public:
             }
 
             sf::Sprite& sprite = spriteManager.GetSprite(spriteComponent.textureID);
+            const auto sourceSize = sprite.getTextureRect().size;
+            const float scale = spriteComponent.worldSpace ? windowManager.GetWorldScale() : 1.0f;
+            sprite.setScale({spriteComponent.bounds.width / sourceSize.x / scale,
+                             spriteComponent.bounds.height / sourceSize.y / scale});
             sprite.setPosition({drawLocation.x, drawLocation.y});
             window->draw(sprite);
         }

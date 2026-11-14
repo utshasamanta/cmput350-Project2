@@ -22,6 +22,7 @@ public:
     Point2D GetWorldCenter() const;
     float GetWorldScale() const;
 
+    // Convert distances using scale only; points also include the camera translation.
     float WindowToWorld(float x) const;
     float WorldToWindow(float x) const;
     Rect WindowToWorld(const Rect& rect) const;
