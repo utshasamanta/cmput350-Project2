@@ -8,13 +8,15 @@ namespace ECSEngine {
 
 const float kMaxRunVelocity = 8;
 const float kDashVelocity = 50;
-const float kJumpVelocity = 25;
+const float kJumpVelocity = 20;
 const float kGroundRunAcceleration = 2;
 const float kAirRunAcceleration = 1;
 const float kDashInterval = 60;
 const float kDashDuration = 6;
 const float kWallJumpVelocity = 12;
-const float kWallSlideVelocity = 4;
+const float kWallSlideVelocity = 1.5f;
+const int kLongJumpSoundFrame = 8;
+const int kWallJumpGraceFrames = 8;
 
 template <typename... Components>
 class InputSystem : public System<Components...> {
@@ -54,6 +56,17 @@ public:
             const bool previousJump = input.lastKeydown[Key::Z];
             const bool dash = input.keydown[Key::C];
             const bool previousDash = input.lastKeydown[Key::C];
+
+            // Keep wall contact for a few frames after moving away.
+            if (collision.onLeftWall) {
+                input.wallJumpFrames = kWallJumpGraceFrames;
+                input.wallSide = -1;
+            } else if (collision.onRightWall) {
+                input.wallJumpFrames = kWallJumpGraceFrames;
+                input.wallSide = 1;
+            } else if (input.wallJumpFrames > 0) {
+                --input.wallJumpFrames;
+            }
 
             // Decrease dash cooldown every frame.
             if (input.lastDash > 0) {
@@ -103,34 +116,56 @@ public:
                 if (collision.onGround) {
                     movement.velocity.y = -kJumpVelocity;
                     jumped = true;
-                } else if (collision.onLeftWall) {
+                } else if (collision.onLeftWall ||
+                           (input.wallJumpFrames > 0 && input.wallSide == -1)) {
                     movement.velocity.x = kWallJumpVelocity;
 
                     movement.velocity.y = -kJumpVelocity;
                     jumped = true;
-                } else if (collision.onRightWall) {
+                } else if (collision.onRightWall ||
+                           (input.wallJumpFrames > 0 && input.wallSide == 1)) {
                     movement.velocity.x = -kWallJumpVelocity;
 
                     movement.velocity.y = -kJumpVelocity;
                     jumped = true;
                 }
+
+                if (jumped && !collision.onGround) {
+                    input.wallJumpFrames = 0;
+                    input.wallSide = 0;
+                }
             }
 
             if (jumped) {
-                engine->GetSoundManager().GetSound("jump").play();
+                input.jumpFrames = 1;
+            }
+
+            // Wait briefly so only the correct jump sound is played.
+            if (jump && input.jumpFrames > 0) {
+                ++input.jumpFrames;
+
+                if (input.jumpFrames >= kLongJumpSoundFrame) {
+                    engine->GetSoundManager().GetSound("jumpLong").play();
+                    input.jumpFrames = -1;
+                }
             }
 
             // Z was released while moving upward.
             if (!jump && previousJump && movement.velocity.y < 0.0f) {
                 movement.velocity.y *= 0.45f;
+
+                if (input.jumpFrames > 0) {
+                    engine->GetSoundManager().GetSound("jumpSmall").play();
+                }
+
+                input.jumpFrames = 0;
             }
 
             // Slow wall slide.
             if (movement.velocity.y > 0.0f) {
-                const bool slidingOnLeft = collision.onLeftWall && left;
-                const bool slidingOnRight = collision.onRightWall && right;
+                const bool touchingWall = collision.onLeftWall || collision.onRightWall;
 
-                if ((slidingOnLeft || slidingOnRight) && movement.velocity.y > kWallSlideVelocity) {
+                if (touchingWall && movement.velocity.y > kWallSlideVelocity) {
                     movement.velocity.y = kWallSlideVelocity;
                 }
             }
@@ -156,6 +191,7 @@ public:
                 movement.velocity.y = 0.0f;
 
                 input.lastDash = kDashInterval;
+                engine->GetSoundManager().GetSound("dash").play();
             }
         }
 

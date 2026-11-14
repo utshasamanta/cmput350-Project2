@@ -197,7 +197,9 @@ int main(int argc, char* argv[]) {
     engine.GetWindowManager().GetWindow()->setFramerateLimit(60);
 
     auto& sounds = engine.GetSoundManager();
-    sounds.RegisterSound(gResourcePath + "sfx_jump.ogg", "jump");
+    sounds.RegisterSound(gResourcePath + "sfx_jump.ogg", "jumpSmall");
+    sounds.RegisterSound(gResourcePath + "sfx_jump-high.ogg", "jumpLong");
+    sounds.RegisterSound(gResourcePath + "laserLarge_000.ogg", "dash");
     sounds.RegisterSound(gResourcePath + "footstep_grass_003.ogg", "land");
     sounds.RegisterSound(gResourcePath + "sfx_gem.ogg", "collect");
     sounds.RegisterSound(gResourcePath + "footstep_snow_001.ogg", "wall");
