@@ -41,3 +41,63 @@ Raiyana Rahman
 - Tested gameplay functionality and resolved integration issues.
 - Tuned movement, gravity, jumping, collision, and camera behavior.
 - Verified compilation and functionality of the final project.
+
+## AI Usage Disclosure
+
+### Areas Where AI Was Used
+
+AI was used in a supporting role during this project for the following work:
+
+- Explaining the high-level ECS architecture and how entities, components,
+  component storage, managers, and systems work together during a game loop.
+- Aiding the EntityManager implementation, particularly the code that maps a
+  component type to its index and the lookup from an EntityID to a component's
+  location in component storage.
+- Explaining how SpriteManager selects a rectangular region from a sprite sheet
+  and how SpriteComponent controls the sprite's position and displayed size.
+- Explaining, reviewing, and debugging collision detection and resolution,
+  including bounding boxes, wall contact, wall jumping, star collisions, and
+  collision state from the previous frame.
+- Assisting with parts of the input, gravity, collision, respawn, debug drawing,
+  sound-trigger, and gameplay-tuning code.
+- Reviewing compiler output and finding integration problems
+- Helping organize and revise the README and project documentation.
+
+AI suggestions were reviewed, adjusted to match the project requirements, and
+compiled and manually tested before being retained in the final project. Both
+team members are responsible for understanding the submitted implementation.
+
+### Example AI Prompts Used
+
+Examples of prompts used during development include:
+
+- "How do I go from an EntityID to the index at which its component is located?"
+- "Explain the implementation for getting the component type index."
+- "Is EntityManager basically a list of all entities currently in the game, with
+  components attached that systems use for calculations?"
+- "When I jump off a wall, it jumps in the opposite direction and I cannot
+  control it to move the other way. Why?"
+- "How do I select a sprite from the sprite sheet?"
+
+Some conversations also involved asking AI to inspect small sections of code,
+explain unexpected behavior, and interpret compiler or runtime errors.
+
+### Reflection on AI Usage
+
+AI was most useful as a learning and debugging tool. It helped make the ECS
+control flow easier to understand by connecting the responsibilities of the
+EntityManager, component storage, systems, and resource managers. The
+explanations of component type indices and EntityID lookups were particularly
+helpful because those ideas were confusing at the beginning of the project.
+
+AI was also useful for tracing collision and input problems that depended on
+state across several frames. Examples included unreliable wall jumps, collision
+box sizing, selecting the correct part of a sprite sheet, and distinguishing
+between a sprite's source rectangle and its position in the game world.
+
+The suggestions were not always immediately suitable. Some implementations
+were longer than necessary, some needed gameplay tuning, and some
+changes had to be corrected after compiling or testing them with the rest of the
+project. The team compared suggestions with the assignment requirements,
+simplified or adjusted them where necessary, tested the resulting behavior, and
+made sure both members understood the final code.

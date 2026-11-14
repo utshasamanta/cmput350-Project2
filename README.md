@@ -1,113 +1,151 @@
 # CMPUT 350 Project 2
 
-A C++20/SFML platformer using an entity-component-system engine.
+This project is a small platformer built in C++ using SFML and an
+entity-component-system engine. The game loads its world from map files and
+includes player movement, variable-height jumping, wall jumping, dashing,
+collisions, star collection, star spawning, sounds, a score display, and a
+camera that follows the player.
 
-## Team and responsibilities
+## Team Contributions
 
-- **Person A — Utsha Samanta:** player input, movement, jumping, wall sliding,
-  wall jumping, dash, collision handling, spike respawning, star collection and
-  bouncing, gameplay sound triggers, and camera-shake triggers.
-- **Person B — Raiyana Rahman:** initial entities and map setup, star spawning,
-  score display, camera following and shake application, sound registration,
-  window-manager features, and documentation.
+### Utsha Samanta — Player Controls, Physics, and Collision
 
-## Build and run
+- Implemented keyboard input handling, including current and previous key states.
+- Developed player movement with acceleration, deceleration, maximum velocity,
+  and air control.
+- Implemented variable-height jumping, fast falling, wall sliding, wall jumping,
+  and dashing.
+- Implemented gravity and movement systems.
+- Developed collision detection and resolution for the player, platforms,
+  walls, spikes, and stars.
+- Implemented player respawning after touching spikes and manual respawning.
+- Implemented star collection, score updates, star collisions, and bouncing.
+- Added sound triggers for jumping, landing, wall contact, dashing, and
+  collecting stars.
+- Implemented camera-shake triggers and collision-box debug drawing.
 
-Use CMake 3.28 or newer and a C++20 compiler. On the lab's Linux x86_64
-machines with GCC 9.4, CMake uses the bundled SFML libraries. Other systems
-fetch SFML 3.1 and its dependencies and need internet access on the first build.
+### Raiyana Rahman — Game Setup, Rendering, Spawning, and Camera
 
-The supplied `assets/sky.map` and `assets/world.map` define the background and
-level. Keep their layout unchanged.
+- Set up the platformer, entity initialization, resource registration, and
+  system execution order.
+- Loaded the background and gameplay maps and created the map entities.
+- Registered textures, sprites, and sound effects.
+- Implemented star spawning with timers and randomized velocities.
+- Created the score display and implemented numeric sprite updates.
+- Implemented horizontal camera following, tracking boundaries, smooth camera
+  movement, and camera-shake application.
+- Completed window management, including world-to-screen and screen-to-world
+  coordinate conversion.
+- Prepared the project documentation and build instructions.
 
-From the project root:
+### Shared Work
+
+- Designed and integrated the ECS architecture, components, managers, and systems.
+- Tested the complete game and resolved integration issues.
+- Tuned movement, gravity, jumping, collisions, dashing, and camera behavior.
+
+## Build and Run
+
+The project uses CMake and includes the required assets in the `assets` folder.
+From the project root, run:
 
 ```sh
 cmake --preset debug
 cmake --build build
-./build/platformer/platformer -path assets
+./build/platformer/platformer
 ```
 
-The default resource path is `assets/`, relative to the working directory.
-When running from another directory, use `-path /absolute/path/to/assets`.
-CMake also copies assets into the build directory at configure time.
+To provide a different resource directory:
 
-Controls specified for Person A: arrow keys to move, Z to jump, C to dash,
-and Down to fall faster. Close the window to quit. The current InputSystem
-is still a stub, so interactive traversal requires Person A's implementation.
+```sh
+./build/platformer/platformer -path /path/to/assets
+```
 
-Run the automated spawn and score checks with `./build/engine/ECSTest`.
+## Controls
 
-## Person B features
+- Left and Right arrows: move
+- Down arrow: fall faster
+- Z: jump or wall jump
+- C: dash
+- R: respawn at the starting position
+- F1: toggle collision-box debug drawing
 
-- Each map `S` creates a star spawner: one star every 120 frames continuously.
-  A negative `totalSpawns` means continuous spawning; zero stops spawning, and
-  a positive value limits the remaining spawns.
-- Stars launch upward with a random horizontal velocity. Each has location,
-  movement, gravity, collision, and sprite components, with entity type `star`.
-- One extra star starts outside the left wall for wall-jump testing.
-- One ScoreComponent owns the score and three screen-space digit entities.
-  The display starts at 000 and clamps to 999 without changing the stored score.
-- The camera follows horizontally, keeps its base height fixed, tracks slowly
-  outside the middle 40%, and immediately enforces the outer 10% margins.
-- CameraShake applies alternating offsets for `frameLimit` frames. Its offset
-  resets when the timer ends; shake never changes the camera's base position.
-- Simulation is capped at 60 frames per second; timing and velocities use frames.
+## Testing
 
-## Integration contracts
+Run the existing engine checks with:
 
-Person A owns controls, player physics, all star collision/bounce behavior,
-collection, and sound/shake triggers. Increment the single ScoreComponent's
-`score` on collection. Write the camera entity's `CameraShake.frameLimit` and
-`offset` on impact. Obtain sounds through `GetSoundManager().GetSound(name)`
-and call `play()`. The registered names are `jump`, `land`, `collect`, and `wall`.
+```sh
+./build/engine/ECSTest
+```
 
-CameraFollower belongs to the player being followed and stores the player's ID.
-CameraComponent and CameraShake belong to the camera entity.
+The game has also been manually tested to confirm that:
 
-System order is collision snapshot, input, gravity, movement, collision, score,
-camera, sprites, then spawning. SpawnSystem finishes its iteration before adding
-entities, because insertion can invalidate iterators and component references.
+- The player can move, perform short and long jumps, wall jump, and dash.
+- The first obstacle section can be crossed using wall jumps.
+- The second obstacle section requires dashing.
+- Stars spawn, bounce, collide, and increase the score when collected.
+- Spikes and the R key return the player to the starting position.
+- Jump, landing, wall, dash, and collection sounds play correctly.
+- The camera follows horizontally and collision impacts cause screen shake.
+- F1 displays the correct collision boxes.
+- Closing the window exits the game.
 
-## Resource ownership
+## AI Usage Disclosure
 
-Managers belong to the engine and live until the engine is destroyed. Systems
-access them through EngineView getters; returned manager references are borrowed.
+### Areas Where AI Was Used
 
-EntityID is an index; check IsValid before using an ID that may have been removed.
-GetComponent returns a borrowed reference. Adding a component of the same type
-may reallocate storage, and removing entities/components invalidates the removed
-data. Keep IDs across frames and reacquire component references when needed.
-Creating entities invalidates entity iterators if the entity vector reallocates.
+AI was used in a supporting role during this project for the following work:
 
-SpriteManager owns textures and sprites. SpriteID remains an index into its
-sprite vector. RegisterTexture may invalidate borrowed sprite references; get
-sprites again by ID after registering more. Texture references remain stable in
-the texture map. Do not retain a sprite reference after engine destruction.
-SpriteSystem sets position and scale before each draw because entities can share
-a SpriteID.
+- Explaining the high-level ECS architecture and how entities, components,
+  component storage, managers, and systems work together during a game loop.
+- Aiding the EntityManager implementation, particularly the code that maps a
+  component type to its index and the lookup from an EntityID to a component's
+  location in component storage.
+- Explaining how SpriteManager selects a rectangular region from a sprite sheet
+  and how SpriteComponent controls the sprite's position and displayed size.
+- Explaining, reviewing, and debugging collision detection and resolution,
+  including bounding boxes, wall contact, wall jumping, star collisions, and
+  collision state from the previous frame.
+- Assisting with parts of the input, gravity, collision, respawn, debug drawing,
+  sound-trigger, and gameplay-tuning code.
+- Reviewing compiler output and finding integration problems.
+- Helping organize and revise the README and project documentation.
 
-SoundManager owns buffers and sounds. RegisterSound may invalidate borrowed
-sound references when its vector grows. Register all sounds during setup, then
-retrieve them by name when playing. Do not retain them past engine destruction.
+AI suggestions were reviewed, adjusted to match the project requirements, and
+compiled and manually tested before being retained in the final project. Both
+team members are responsible for understanding the submitted implementation.
 
-WindowManager owns the render window through shared_ptr. GetWindow returns a
-shared owner, but normal use should keep its lifetime within the engine's.
-SetWorldRect centers and fits the requested world rectangle while preserving
-aspect ratio. DebugDrawRect and DebugFrameRect accept world coordinates.
-The float WindowToWorld/WorldToWindow overloads convert distances using scale
-only; the Point2D overloads convert positions using scale and camera translation.
-CollisionComponent stores its current collisionBox relative to the entity, but
-previousCollisionBox is a snapshot in world coordinates.
+### Example AI Prompts Used
 
-SystemManager owns systems through unique_ptr and runs them in insertion order.
-ClearSystems destroys those systems and invalidates references to them.
+Examples of prompts used during development include:
 
-## Submission checks
+- "How do I go from an EntityID to the index at which its component is located?"
+- "Explain the implementation for getting the component type index."
+- "Is EntityManager basically a list of all entities currently in the game, with
+  components attached that systems use for calculations?"
+- "When I jump off a wall, it jumps in the opposite direction and I cannot
+  control it to move the other way. Why?"
+- "How do I select a sprite from the sprite sheet?"
 
-Merge Person A first, then integrate Person B with that branch. Confirm
-collection and all four sounds, test both obstacle sections,
-and tune movement/dash and star bounce with Person A. Build and run on a lab
-machine. Fill in team names and contributions in ABOUT.TXT. Build and run again
-from the exact extracted submission archive before submitting. Do not include
-local build output in the archive.
+Some conversations also involved asking AI to inspect small sections of code,
+explain unexpected behavior, and interpret compiler or runtime errors.
+
+### Reflection on AI Usage
+
+AI was most useful as a learning and debugging tool. It helped make the ECS
+control flow easier to understand by connecting the responsibilities of the
+EntityManager, component storage, systems, and resource managers. The
+explanations of component type indices and EntityID lookups were particularly
+helpful because those ideas were confusing at the beginning of the project.
+
+AI was also useful for tracing collision and input problems that depended on
+state across several frames. Examples included unreliable wall jumps, collision
+box sizing, selecting the correct part of a sprite sheet, and distinguishing
+between a sprite's source rectangle and its position in the game world.
+
+The suggestions were not always immediately suitable. Some implementations
+were longer than necessary, some needed gameplay tuning, and some
+changes had to be corrected after compiling or testing them with the rest of the
+project. The team compared suggestions with the assignment requirements,
+simplified or adjusted them where necessary, tested the resulting behavior, and
+made sure both members understood the final code.
