@@ -76,3 +76,6 @@ xcuserdata/
 cmake-build-*/
 .DS_Store
 build/
+
+# Gameplay maps are source assets, not linker output.
+!assets/*.map

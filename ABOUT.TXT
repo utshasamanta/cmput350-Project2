@@ -1,0 +1,43 @@
+CMPUT 350 - Project 2
+
+Team members:
+Utsha Samanta
+Raiyana Rahman
+
+## Team Contributions
+
+### Utsha Samanta – Player Controls, Physics, and Collision
+
+- Implemented keyboard input handling, including tracking current and previous key states.
+- Developed player movement with acceleration, deceleration, maximum velocity, and air control.
+- Implemented jumping mechanics, including variable jump height, fast falling, wall sliding, and wall jumping.
+- Added horizontal dashing with a cooldown to prevent continuous dashing.
+- Implemented gravity and movement systems to update entity positions and velocities.
+- Developed collision detection and resolution between the player, platforms, walls, and other entities.
+- Implemented player respawning upon collision with spikes.
+- Handled dynamic star collisions, bouncing, and velocity reduction upon impact.
+- Implemented star collection, entity removal, and score updates.
+- Added sound triggers for jumping, landing, wall sliding, and collecting stars.
+- Implemented camera shake triggers when the player collides with solid objects.
+
+### Raiyana Rahman – Game Setup, Rendering, Spawning, and Camera
+
+- Set up the main platformer game, including entity initialization, resource registration, and system execution order.
+- Loaded the provided background and gameplay maps and created world entities with the appropriate components.
+- Registered textures, sprites, and gameplay sound effects.
+- Implemented the star spawning system, including spawn timers, randomized velocities, and spawn limits.
+- Created the score display using numeric sprites and screen-space entities.
+- Implemented the score system to update the displayed digits when the player collects stars.
+- Developed a camera system that follows the player horizontally while maintaining a fixed vertical position.
+- Implemented camera tracking boundaries, smooth camera movement, and camera shake effects.
+- Completed window management functionality, including world-to-screen and screen-to-world coordinate conversions.
+- Implemented camera positioning, scaling, and world rectangle calculations.
+- Prepared project documentation, including build instructions, controls, implementation details, and resource management guidelines.
+
+### Shared Contributions
+
+- Designed the overall ECS architecture and coordinated component interfaces.
+- Integrated resource managers, components, and gameplay systems into the platformer.
+- Tested gameplay functionality and resolved integration issues.
+- Tuned movement, gravity, jumping, collision, and camera behavior.
+- Verified compilation and functionality of the final project.
