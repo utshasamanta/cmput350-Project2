@@ -74,6 +74,24 @@ int main() {
     Check(stars == 80);
     Check(entities.GetComponent<SpawnComponent>(0).totalSpawns == 0);
 
+    const auto continuous = entities.CreateEntity("spawner");
+    entities.AddComponent(continuous, LocationComponent{{100.0f, 200.0f}});
+    entities.AddComponent(continuous, SpawnComponent{continuous, "star", 7, 2, 2, -1});
+    spawn.Run(&engine);
+    Check(entities.GetComponent<SpawnComponent>(continuous).timeToNextSpawn == 1);
+    for (int frame = 1; frame < 50; ++frame) {
+        spawn.Run(&engine);
+    }
+    stars = 0;
+    for (const auto& entity : entities) {
+        if (entity.GetType() == "star") {
+            ++stars;
+        }
+    }
+    Check(stars == 105);  // 80 finite spawns plus 25 continuous spawns.
+    Check(entities.GetComponent<SpawnComponent>(continuous).totalSpawns == -1);
+    Check(entities.GetComponent<SpawnComponent>(continuous).timeToNextSpawn == 2);
+
     ScoreComponent score{};
     for (int digit = 0; digit < 10; ++digit) {
         score.digitTextureID[digit] = 100 + digit;

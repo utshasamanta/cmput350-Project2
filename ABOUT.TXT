@@ -25,7 +25,7 @@ Raiyana Rahman
 - Set up the main platformer game, including entity initialization, resource registration, and system execution order.
 - Loaded the provided background and gameplay maps and created world entities with the appropriate components.
 - Registered textures, sprites, and gameplay sound effects.
-- Implemented the star spawning system, including spawn timers, randomized velocities, and spawn limits.
+- Implemented the star spawning system, including spawn timers, randomized velocities, and continuous spawning with optional finite limits.
 - Created the score display using numeric sprites and screen-space entities.
 - Implemented the score system to update the displayed digits when the player collects stars.
 - Developed a camera system that follows the player horizontally while maintaining a fixed vertical position.

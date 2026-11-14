@@ -174,7 +174,7 @@ void LoadMap(Engine& engine, const std::string& path, const std::string& file) {
                 spawner.spawnTextureID = starSpriteID;
                 spawner.timeToNextSpawn = 120;
                 spawner.timeBetweenSpawns = 120;
-                spawner.totalSpawns = 20;
+                spawner.totalSpawns = -1;  // Keep spawning throughout the game.
 
                 entities.AddComponent(entity, spawner);
             }
