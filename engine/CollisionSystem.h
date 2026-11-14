@@ -255,11 +255,6 @@ private:
 
                 auto& firstMovement = entities.template GetComponent<MovementComponent>(firstID);
                 auto& secondMovement = entities.template GetComponent<MovementComponent>(secondID);
-                std::swap(firstMovement.velocity, secondMovement.velocity);
-                firstMovement.velocity.x *= 0.8f;
-                firstMovement.velocity.y *= 0.8f;
-                secondMovement.velocity.x *= 0.8f;
-                secondMovement.velocity.y *= 0.8f;
 
                 const float overlapX = std::min(
                     firstBox.topLeft.x + firstBox.width - secondBox.topLeft.x,
@@ -272,10 +267,17 @@ private:
                     const float direction = firstBox.topLeft.x < secondBox.topLeft.x ? -1.0f : 1.0f;
                     firstLocation.loc.x += direction * overlapX * 0.5f;
                     secondLocation.loc.x -= direction * overlapX * 0.5f;
+                    // Exchange only the impact-axis velocities, and only when approaching.
+                    if ((firstMovement.velocity.x - secondMovement.velocity.x) * direction < 0.0f) {
+                        std::swap(firstMovement.velocity.x, secondMovement.velocity.x);
+                    }
                 } else {
                     const float direction = firstBox.topLeft.y < secondBox.topLeft.y ? -1.0f : 1.0f;
                     firstLocation.loc.y += direction * overlapY * 0.5f;
                     secondLocation.loc.y -= direction * overlapY * 0.5f;
+                    if ((firstMovement.velocity.y - secondMovement.velocity.y) * direction < 0.0f) {
+                        std::swap(firstMovement.velocity.y, secondMovement.velocity.y);
+                    }
                 }
             }
         }

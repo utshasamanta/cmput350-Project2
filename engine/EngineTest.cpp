@@ -1,13 +1,14 @@
 #include <stdexcept>
 
 #include "ECSEngine.h"
+#include "CollisionSystem.h"
 #include "ScoreSystem.h"
 #include "SpawnSystem.h"
 
 using namespace ECSEngine;
 
 #define TEST_COMPONENTS LocationComponent, MovementComponent, GravityComponent, CollisionComponent, \
-    SpriteComponent, SpawnComponent, ScoreComponent
+    SpriteComponent, SpawnComponent, ScoreComponent, CameraShake, RespawnComponent
 
 // Spawning and score updates do not need a window or loaded textures.
 class TestEngine : public EngineView<TEST_COMPONENTS> {
@@ -28,7 +29,37 @@ void Check(bool condition) {
     }
 }
 
+void TestStarCollisionVelocities() {
+    for (int axis = 0; axis < 2; ++axis) {
+        for (int separating = 0; separating < 2; ++separating) {
+            TestEngine engine;
+            CreateStar(engine.entities, {0.0f, 0.0f}, {}, 0);
+            CreateStar(engine.entities,
+                       axis == 0 ? Point2D{40.0f, 0.0f} : Point2D{0.0f, 40.0f}, {}, 0);
+            const float firstSpeed = separating ? -1.0f : 4.0f;
+            const float secondSpeed = separating ? 4.0f : -1.0f;
+            engine.entities.GetComponent<MovementComponent>(0).velocity =
+                axis == 0 ? Point2D{firstSpeed, 3.0f} : Point2D{3.0f, firstSpeed};
+            engine.entities.GetComponent<MovementComponent>(1).velocity =
+                axis == 0 ? Point2D{secondSpeed, -2.0f} : Point2D{-2.0f, secondSpeed};
+            CollisionSystem<TEST_COMPONENTS> collision;
+            collision.Run(&engine);
+            const auto a = engine.entities.GetComponent<MovementComponent>(0).velocity;
+            const auto b = engine.entities.GetComponent<MovementComponent>(1).velocity;
+            Check((axis == 0 ? a.x : a.y) == (separating ? firstSpeed : secondSpeed));
+            Check((axis == 0 ? b.x : b.y) == (separating ? secondSpeed : firstSpeed));
+            Check((axis == 0 ? a.y : a.x) == 3.0f);
+            Check((axis == 0 ? b.y : b.x) == -2.0f);
+            const auto first = engine.entities.GetComponent<LocationComponent>(0).loc;
+            const auto second = engine.entities.GetComponent<LocationComponent>(1).loc;
+            Check((axis == 0 ? second.x - first.x : second.y - first.y) == 48.0f);
+        }
+    }
+    std::cout << "Star collision direction and separation checks passed\n";
+}
+
 int main() {
+    TestStarCollisionVelocities();
     TestEngine engine;
     auto& entities = engine.entities;
     // Multiple spawners exercise creation without invalidating the active iteration.

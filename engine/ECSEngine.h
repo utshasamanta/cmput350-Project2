@@ -135,7 +135,7 @@ bool ECSEngine<Components...>::ProcessEvents() {
             return false;
         }
 
-        if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+        if (const auto* keyPressed = event->template getIf<sf::Event::KeyPressed>()) {
             const size_t keyIndex = static_cast<size_t>(keyPressed->scancode);
             bool wasDown = false;
 
@@ -197,7 +197,7 @@ bool ECSEngine<Components...>::ProcessEvents() {
                     }
                 }
             }
-        } else if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>()) {
+        } else if (const auto* keyReleased = event->template getIf<sf::Event::KeyReleased>()) {
             setKeyState(keyReleased->scancode, false);
         }
     }

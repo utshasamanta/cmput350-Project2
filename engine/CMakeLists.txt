@@ -16,6 +16,15 @@ else()
     set(SFML_USE_SYSTEM_DEPS OFF)
     FetchContent_MakeAvailable(SFML)
 
+    if(APPLE)
+        # These C libraries define internal symbols that clash in unity builds.
+        foreach(dependency freetype ogg FLAC vorbis vorbisenc vorbisfile)
+            if(TARGET ${dependency})
+                set_target_properties(${dependency} PROPERTIES UNITY_BUILD OFF)
+            endif()
+        endforeach()
+    endif()
+
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         target_link_libraries(freetype PRIVATE harfbuzz)
     endif()
