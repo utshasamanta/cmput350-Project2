@@ -23,7 +23,7 @@ struct CameraComponent {
 };
 
 struct CameraFollower {
-    EntityID entityID;  // The entity that this camera follows
+    EntityID entityID;  // This component belongs to the followed entity and stores its own ID.
 };
 
 struct CameraShake {

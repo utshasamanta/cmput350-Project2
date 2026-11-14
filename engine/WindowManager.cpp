@@ -1,40 +1,118 @@
 #include "WindowManager.h"
 
+#include <algorithm>
+#include <cstdint>
+
 namespace ECSEngine {
 
 WindowManager::WindowManager(unsigned int width, unsigned int height, const std::string& title)
-    : mWindow(std::make_shared<sf::RenderWindow>(sf::VideoMode({width, height}), title)) {}
+    : mWindow(std::make_shared<sf::RenderWindow>(sf::VideoMode({width, height}), title)),
+      mWorldCenter(static_cast<float>(width) / 2.0f, static_cast<float>(height) / 2.0f),
+      mWorldUnitsPerPixel(1.0f) {
+        mWindow->setFramerateLimit(60);
+      }
 
 std::shared_ptr<sf::RenderWindow> WindowManager::GetWindow() const { return mWindow; }
 
-Rect WindowManager::GetWindowBounds() const { return Rect(); }
+Rect WindowManager::GetWindowBounds() const {
+    const sf::Vector2u size = mWindow->getSize();
+    return {
+        Point2D(0, 0),
+        static_cast<float>(size.x),
+        static_cast<float>(size.y)
+    };
+}
 
-void WindowManager::DebugDrawRect(const Rect& r, int red, int green, int blue, int alpha) {}
+void WindowManager::DebugDrawRect(const Rect& r, int red, int green, int blue, int alpha) {
+    const auto screen = WorldToWindow(r);
+    sf::RectangleShape shape({screen.width, screen.height});
+    shape.setPosition({screen.topLeft.x, screen.topLeft.y});
+    shape.setFillColor(sf::Color(static_cast<std::uint8_t>(red), static_cast<std::uint8_t>(green),
+                                static_cast<std::uint8_t>(blue), static_cast<std::uint8_t>(alpha)));
+    mWindow->draw(shape);
+}
 
-void WindowManager::DebugFrameRect(const Rect& r, int red, int green, int blue, int alpha) {}
+void WindowManager::DebugFrameRect(const Rect& r, int red, int green, int blue, int alpha) {
+    const auto screen = WorldToWindow(r);
+    sf::RectangleShape shape({screen.width, screen.height});
+    shape.setPosition({screen.topLeft.x, screen.topLeft.y});
+    shape.setFillColor(sf::Color::Transparent);
+    shape.setOutlineThickness(1.0f);
+    shape.setOutlineColor(sf::Color(static_cast<std::uint8_t>(red), static_cast<std::uint8_t>(green),
+                                   static_cast<std::uint8_t>(blue), static_cast<std::uint8_t>(alpha)));
+    mWindow->draw(shape);
+}
 
-Rect WindowManager::WindowToWorld(const Rect& rect) const { return Rect(); }
+Rect WindowManager::WindowToWorld(const Rect& rect) const {
+    return {
+        WindowToWorld(rect.topLeft),
+        WindowToWorld(rect.width),
+        WindowToWorld(rect.height)
+    };
+}
 
-Point2D WindowManager::WindowToWorld(const Point2D& pt) const { return Point2D(); }
+Point2D WindowManager::WindowToWorld(const Point2D& pt) const {
+    const sf::Vector2u size = mWindow->getSize();
 
-Rect WindowManager::WorldToWindow(const Rect& rect) const { return Rect(); }
+    return {
+        (pt.x - static_cast<float>(size.x) / 2.0f) * mWorldUnitsPerPixel + mWorldCenter.x,
+        (pt.y - static_cast<float>(size.y) / 2.0f) * mWorldUnitsPerPixel + mWorldCenter.y
+    };
+}
 
-Point2D WindowManager::WorldToWindow(const Point2D& pt) const { return Point2D(); }
+Rect WindowManager::WorldToWindow(const Rect& rect) const {
+    return {
+        WorldToWindow(rect.topLeft),
+        WorldToWindow(rect.width),
+        WorldToWindow(rect.height)
+    };
+}
 
-void WindowManager::SetCamera(const Point2D& worldPt, const Point2D& screenPt) {}
+Point2D WindowManager::WorldToWindow(const Point2D& pt) const {
+    const sf::Vector2u size = mWindow->getSize();
 
-Point2D WindowManager::GetWorldCenter() const { return Point2D(); }
+    return {
+        (pt.x - mWorldCenter.x) / mWorldUnitsPerPixel + static_cast<float>(size.x) / 2.0f,
+        (pt.y - mWorldCenter.y) / mWorldUnitsPerPixel + static_cast<float>(size.y) / 2.0f
+    };
+}
 
-float WindowManager::GetWorldScale() const { return 1; }
+void WindowManager::SetCamera(const Point2D& worldPt, const Point2D& screenPt) {
+    const sf::Vector2u size = mWindow->getSize();
+    mWorldCenter = {
+        worldPt.x - (screenPt.x - static_cast<float>(size.x) / 2.0f) * mWorldUnitsPerPixel,
+        worldPt.y - (screenPt.y - static_cast<float>(size.y) / 2.0f) * mWorldUnitsPerPixel
+    };
+}
 
-void WindowManager::SetWorldCenter(const Point2D& worldCenter) {}
+Point2D WindowManager::GetWorldCenter() const { return mWorldCenter; }
 
-void WindowManager::SetWorldScale(float worldUnitsPerPixel) {}
+float WindowManager::GetWorldScale() const { return mWorldUnitsPerPixel; }
 
-void WindowManager::SetWorldRect(const Rect& worldCameraRect) {}
+void WindowManager::SetWorldCenter(const Point2D& worldCenter) {
+    mWorldCenter = worldCenter;
+}
 
-float WindowManager::WindowToWorld(float x) const { return 0; }
+void WindowManager::SetWorldScale(float worldUnitsPerPixel) {
+    if (worldUnitsPerPixel <= 0) {
+        throw std::invalid_argument("World units per pixel must be positive.");
+    }
+    mWorldUnitsPerPixel = worldUnitsPerPixel;
+}
 
-float WindowManager::WorldToWindow(float x) const { return 0; }
+void WindowManager::SetWorldRect(const Rect& worldCameraRect) {
+    if (worldCameraRect.width <= 0.0f || worldCameraRect.height <= 0.0f) {
+        throw std::invalid_argument("Camera rectangle dimensions must be positive.");
+    }
+    const auto bounds = GetWindowBounds();
+    SetWorldScale(std::max(worldCameraRect.width / bounds.width,
+                           worldCameraRect.height / bounds.height));
+    SetWorldCenter({worldCameraRect.topLeft.x + worldCameraRect.width / 2.0f,
+                    worldCameraRect.topLeft.y + worldCameraRect.height / 2.0f});
+}
+
+float WindowManager::WindowToWorld(float x) const { return x * mWorldUnitsPerPixel; }
+
+float WindowManager::WorldToWindow(float x) const { return x / mWorldUnitsPerPixel; }
 
 }  // namespace ECSEngine

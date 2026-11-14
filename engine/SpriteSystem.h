@@ -21,7 +21,46 @@ public:
         return name;
     }
 
-    tSystemReturn Run(EngineView<Components...>* engine) override { return kContinue; }
+    tSystemReturn Run(EngineView<Components...>* engine) override {
+        auto& entityManager = engine->GetEntityManager();
+        auto& spriteManager = engine->GetSpriteManager();
+        auto& windowManager = engine->GetWindowManager();
+
+        auto window = windowManager.GetWindow();
+
+        for (const Entity& entity: entityManager) {
+            const EntityID eid = entity.GetID();
+
+            if (!entityManager.IsValid(eid) ||
+                !entityManager.template HasComponent<SpriteComponent>(eid) ||
+                !entityManager.template HasComponent<LocationComponent>(eid)
+            ) {
+                continue;
+            }
+
+            auto& spriteComponent = entityManager.template GetComponent<SpriteComponent>(eid);
+            auto& locationComponent = entityManager.template GetComponent<LocationComponent>(eid);
+
+            Point2D drawLocation{
+                locationComponent.loc.x + spriteComponent.bounds.topLeft.x,
+                locationComponent.loc.y + spriteComponent.bounds.topLeft.y
+            };
+
+            if (spriteComponent.worldSpace) {
+                drawLocation = windowManager.WorldToWindow(drawLocation);
+            }
+
+            sf::Sprite& sprite = spriteManager.GetSprite(spriteComponent.textureID);
+            const auto sourceSize = sprite.getTextureRect().size;
+            const float scale = spriteComponent.worldSpace ? windowManager.GetWorldScale() : 1.0f;
+            sprite.setScale({spriteComponent.bounds.width / sourceSize.x / scale,
+                             spriteComponent.bounds.height / sourceSize.y / scale});
+            sprite.setPosition({drawLocation.x, drawLocation.y});
+            window->draw(sprite);
+        }
+
+        return kContinue;
+    }
 };
 
 }  // namespace ECSEngine

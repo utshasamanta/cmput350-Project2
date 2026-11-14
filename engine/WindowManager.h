@@ -22,6 +22,7 @@ public:
     Point2D GetWorldCenter() const;
     float GetWorldScale() const;
 
+    // Convert distances using scale only; points also include the camera translation.
     float WindowToWorld(float x) const;
     float WorldToWindow(float x) const;
     Rect WindowToWorld(const Rect& rect) const;
@@ -34,6 +35,8 @@ public:
 
 private:
     std::shared_ptr<sf::RenderWindow> mWindow;
+    Point2D mWorldCenter;
+    float mWorldUnitsPerPixel;
 };
 
 }  // namespace ECSEngine

@@ -16,7 +16,7 @@ public:
     SpriteID spawnTextureID;
     int timeToNextSpawn;
     int timeBetweenSpawns;  // in frames
-    int totalSpawns;
+    int totalSpawns;  // Remaining spawns; negative means continuous, zero means stopped.
 
 private:
 };
